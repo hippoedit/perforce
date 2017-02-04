@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<!DOCTYPE package-info SYSTEM "http://www.hippoedit.com/xml/package-info">
+<package-info xmlns="http://www.hippoedit.com/xml/package-info" xmlns:smf="http://www.hippoedit.com/">
+	<id>C256671F-7738-4820-B87D-40BF540DD829</id>
+	<name>Perforce Integration</name>	
+	<version>1.0.0.4</version>
+	<description>Perforce Integration Plugin</description>
+	<author>HippoEDIT.com</author>
+	<email>supportbox@hippoedit.com</email>
+	<homepage>http://wiki.hippoedit.com/plugins/perforce</homepage>
+	<memo></memo>
+
+	<!-- Common Install actions -->
+	<install>
+		<!-- Read me -->
+		<readme type="inline">This will install Perforce Integration plugin for HippoEDIT.</readme>
+
+		<require-file name="perforce.hejs" destination="%{plugins}%/perforce.hejs" />
+
+		<!-- Registration -->
+		<install-plugin path="%{plugins}%/perforce.hejs"/>
+	</install>
+
+	<!-- Uninstall actions -->
+	<uninstall>
+		<!-- Read me -->
+		<readme type="inline">This will uninstall Perforce Integration plugin for HippoEDIT.</readme>
+
+		<!-- Un-Registration -->
+		<uninstall-plugin id="C256671F-7738-4820-B87D-40BF540DD829"/>
+
+		<!-- Source files -->
+		<remove-file name="%{plugins}%/perforce.hejs" />
+	</uninstall>
+
+</package-info>

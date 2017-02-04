@@ -1,0 +1,245 @@
+#include "he_utils.js"	// generic helper functions
+#include "he_edit.hejs"
+
+// Perforce command line documentation
+// http://www.perforce.com/perforce/doc.current/manuals/cmdref/edit.html
+
+//${ region Icons }
+
+var nIconP4 = Application.RegisterImageString(
+'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADMElEQVR4AY3Af2iUZQAH8O/z/tp7d7sd \
+ uzy23dK13dZchqshRSmU/WlBZAkCi4AiM0kolAgxaFFkAAJEoDSoWcKKooqoWFHgEtCM5rSpzdftyrvd \
+ 3e7e9+7e38/zPk9XDIj+2oc4YoKsVqJ0zbTbwoAKzkHyS7ZMFMUFUMV/5DYlu69fLccXrpg+gAJaSL54 \
+ VGn+ZX+VZsa9LIyYpggSU4Vq3AgaUz96006b9DqAxtP7Ht6Z0ysfkeXzqckv6+ePnf5zN4CaUis6Ulst \
+ vyGhm51uw0Wp3ISAjI29Hakn7goOvXrabN7/yNgnA53qB8ri5Z7AdnF1sZKs1twBADVFSAKChUwSHHML \
+ VnTkQ+u7dl1yTh7WHx3JxbWxQX98oKdnb7xwZmOj2YTnCxRWA4sQQdEi4R9EgBCg4Qo0Ammub+yOb9Jb \
+ NjMWhhjM3TLU418auX5hHowDtstRMEVJIrAkAihoIZKGgBGM3pmRZ45nDmaGuiVYdmzFBWorZWiWg5lq \
+ /I8jz8X6r1yzlJJJl2UCBy0K/kUAQpBMKKhZYaL002UwoWJ+OYDfbOLjX9hcLNtxLdmhDBVM4TsBLwjB \
+ PbRIiCKAutBkjt8XyvypN41vJz7Xzs7eTAu/bsEoitLMnDe1856UL4cUSxVRD6koAQjRIoFzyGBEVwnq \
+ zZB6ckfhwP4dmx7bYhHLRmX6rHsyd3vms21jXbpnepg33ILPyI0QGg2hQWEKEQtGROpVHxSqPL5neM9Y \
+ ykhapoeubMI59nxi6/DW2w4P5rLbKxdX8ODdsfRIrv+FvKOfAPAzubj4Ennj6OwDF84ZO/qyyfsOPt65 \
+ a/RWCe3JNqTaAYVwBJSgTnUIypBJcZQrAXa/dvOtc5cqEwRrunpTyrbRvof6k+6LgedmQSSZy6qgVPDe \
+ jJw49GRvLp93xXtfV5dcP7K/mF09ZVn+JMH/DAx3byit2P2SBIWxSMia6j8zvnnv8f2pl09NGf6+d0pv \
+ hwH9QRZRkTG+RLAO30/vOrG923z23emi+cr7pQOqFH0KIESLgnU481tjZvLXfMYohgGnNO9xTrGGYJ20 \
+ uJ6hIe2UhagAMLHmb4ARoXcBaDU7AAAAAElFTkSuQmCC');
+
+var nIconCheckIn = Application.RegisterImageString(
+'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACd0lEQVR42o2Qb0hTYRjFf3e72xAYGhM0 \
+ 6JOBVVRgJAELSzMDBAqNQPxkFRARQEBBgFGA0MdYQaVIBoEUVSKIFGozSU1NIyQVkkxJo+ambvdu92/3 \
+ vpgoKHTg4T4X3nOecw7/A9u2/c742ARyT0+3zSoMwyCTyZBOu6OiqioFBTsj0Wj0SSAQmAcWAHODAEBJ \
+ yVH3iiNgYmJjmWBaNjPTU3waHrmy78D+IqAReAmo60U87lXTNBkfH2fs8xhDg4MM9PdhIRGPx6muqUXT \
+ tCNtHZ0twHYgsMGBa9lwBHbt3gsej7ODZduYzjhEFuZmePaqjYnJKYAdQAJQ1gTcvKZp0/+hF03XRQ+S \
+ JJGdne3kLyDy4BHl56/SW3eGh41N3UoqyWIsRiIRJxK5l+sIqOLiocNhJK+M4ewim2ly81a9IA+TR2Xz \
+ e77qENdsJmZmWb59GqBQVhRV2I12dYouLMtiW04OL9o7qLx0nZ+BPMjAuxjMp+GbosP3OfYgEHIcpEXj \
+ 4dIK8MjObokIxeFjlJaVMnqjm+IcH1OJDEvLCVj6Bb9/bCzRtKCz/TmGroseJCAUCtF4/y4XL5cxdK6J \
+ ouYLIGCLd8Y/Ad35yegGJSdP4fX5MSxcR6KXgOzhzdsuKk4cB2B0oK8OWEGEEojJAGpa43XrY9Kqihsp \
+ 7boyDDweD/n5+bQ8baX2bBWr5EmXCAKaEPgTi3EwXC6cGJaNKcbCRsLr9TI9u0BNdRVfRj5mVsnzax0k \
+ k0nu1F8T1xUlTVJJkVpJkkopuP3IsozP70f2+dgMckNDQy5QCITYAsFg0JuVleUFFgGNdZAAPxAU360h \
+ ISDIy+tF/gIw+VO+5V1eoQAAAABJRU5ErkJggg==');
+
+var nIconCheckOut = Application.RegisterImageString(
+'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACdElEQVR4Xq2QXUhTcRjG/yWzCEfilqYy \
+ AlKUAC0gpMybKiXxbBLglYQF3XQjkhAKERABFgmmSeqVTLFyW61N25f7QDSHLhtEIyKKDUtiWPPs4+yL \
+ p/eMtaBcV77w49y8z+99zp+J43DY8Rur1QKj0QCNRoOpKTXGx8eh0+nuqtXqelqVEHuI3OQE6XQaqVQK \
+ ghBHRBDARwRs8VE4nU50d3djaGhIQ4HDt46VVPwjEa8mEgl4vV6suN1wulwwWywIhqLQ6/X45P+KsdFR \
+ uM/JcLuqIEgRObEvJxArR2MxCPEkhGQaYSGNUCyFrXAcMzMzMJlMWKXwwxqGs5KCRC1jXRQ7lGui1WrB \
+ h6OwOxywWK0wzs3hpcEAq80Gj8eD9y1yPKpmaJYWoYqx+xQ5T5QTezOC2dln2OYj2I4Imes/6fqPaBJ8 \
+ iMc3rhSPqyVoL5Xh+pWroEAHUUcU5RqI/8lvBBBQVeIdvcPa2ho+rK9ik8KvTzJcKtpPbzEPjlOKAiWh \
+ yF0XsVFVf0cNElP3ELggg0AyMbzZyHD54AHMPzdi3rWK4/UnREFbtv6fMZvNWL6ogK+JATdbM5JYM8O1 \
+ 4kKM3OjB4OAgtAtuKCqP7CyYnp6Gb3EBI7USLDUw+EnUW8Zwp7UFX4IR2N98xBPzMkqKZTsLhoeH8Xnj \
+ O2x6HR7UFqK3nKFLUYrJiQn09fWhs7MTauNifsHAwACW3/rgcq/jlWEOPQ110GpeQG9fwVPTEiYNLozN \
+ mvML+vv7oVIqoeQ4+qrAtXE409iEqqPVkMvLxGCG4nwCQkacEu35kEqlKqKdAqcz+39NYVZS/h8qssgz \
+ +7s1vwDEK5F1VBT68AAAAABJRU5ErkJggg==');
+ 
+ var nIconHistory = Application.RegisterImageString(
+'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAC5klEQVR42nWTC0iTYRSGV4lCdlNNAwIo \
+ BAgSCKoABGQQC5gTiYYEBSgALm9sbU4dxYY6a5uVqU5JbZYJagTOu8rayluqIZG6DEkdbqlz6ryy/b6d \
+ jT8xyBce+IHznu9873d+zkHp9fozWq3mrkqlbMvOlo/I5fJBoi4rS5aclpZ6gUqOcQ6TTqeN0ZaU97z9 \
+ /BXmNQZTe8AoA9RNe6FusiA7r2BEIpHco9LjxNF/zEVFupjiN/Wrwx4GSwAG5+dheG9EfUsXGsd/w2AD \
+ Hn/yQKqrdIlEomSynNxvUlGhP6d5UWLt32AwC6C6pgrGNiOaW4zo7O7C0PAwxsbH8KD0I5KbdyFWPpkX \
+ CASx/knY0e9XdvSx5tcwmUyw2WxwuVzwyel0gs/no6y8DPENwO1iMyQSsYGs54kAaqBrbZv1oHdmHkaj \
+ Eb9mZvBX6+vrEAqFMJvNmJqwQtzkxkWNCzk52T/JfIU4waHU574wQFl1LWwLNmxsbcAnu92OxMREv9mn \
+ ZacL2qoOnH20A3qZVTLHEmHUQOsyeUGhtWJkbBQezw584nK54PF4vgn8rKys4FltD4LkDBSKXIbMPCLS \
+ N0G7wcqgZtABi8UCt3sT/9OiYxEphi2EqlygHZkj8y1/g4KCAoX6Qx8034BmysA6/QM+eb3effP29jas \
+ k5MIywUuPx1AenpaO5m5RDhHoVBE5xRqpqTdu5B0AN29vZigwOyLi1hzu+FwODBJ5huFQFjeEpJUpbsJ \
+ CQn5ZL5KnCI4ARRK2kPdqy1h4za4FYD4nRvPazrR0PUdqYYdROSSWbUMvrpxj57QTJ44IooIJDhHiODM \
+ zEypWKlxxL/sR1TxJoKUewhSMAjNX8Ul9RCS8vSMTCYboNo77Okh+9vIfpym1GNFopRimUxKP1KWk8Jy \
+ 05svZGSkd8XF8ZVUIyCuERH+JWJ1sEkwu2HRRAxxk+CxgV1nxw5hzYcqgN3zEPakSCKcDSyQvfK+/gCO \
+ 2vnYnPZ41AAAAABJRU5ErkJggg==');
+
+var nIconSync = Application.RegisterImageString(
+'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACk0lEQVR4XnWScUgTURzHLcr+EkYLahYQ \
+ aYAFOCGQcvZfpqAkJAlgJaCUBJWmUps5UpwD0UEDYjMHa8ooN0a4DbabMPVM3SxwwKaB4TRQzCbr2Dyd \
+ 9u3dITvW4YMPB/fj83mPx8v6fwE4kflHPOcwm82nRPLk5ARoegrc1+ej4HSOwWazYXjYAqPRCKvV2mWx \
+ WAqJcJJwnHAsIxAIBJBKpcCyLHYICQKTYBFjkvD7/WhsaMDAwICdCOcI2aITLC5GoP/cg+jqKkKhEOjp \
+ aVA+H7biSf4kkeU13Ltbg96+fhDhgiiytfULb8wv0Pb2EfYP/oLdOwDD7uM3s8vtDI1GA5VKharKKi5Q \
+ SpBm9ds60D/aCe2IEirDMygNT0EnRvlINBoFTdOw2e0YGhqCVquFe2oeZbfKuEAlQZbVO/wS89sUvjIU \
+ gkk3L7tj76FZfshHErsH2GT2sBrbQSASxZg/AEWJQgh0mdoQ3PbCFTPAHu+DcaONl1+FavA8WIUH7TVw \
+ uVzQ6/VQKpVwjAcglxcJgY53LZiJOaFfakZPpA4t326jkb6JuvFi5Mkv4s/OPn5us/i+kcBk6Afs43PI \
+ z7ssBNp1T3CluABXFQW4Vl6EkuritBwOh+FwOKDT6fC6sxNNTU34RM1CJjsvBMiSEq5zxZWVFTT3NfIy \
+ w6awHmexvJlEeJ3BwlocnuASrJ4vOC2RZgSyDyMyiqLwWH0fXq8XJpMJ3d3daG1t5Xeur69HbW0tPjin \
+ RIE0g4ODoIML8NFBuP1z5MJmYaNm8NEzjRE3DfPYBAyjnqMDarWaf2kV5RUoVZSisFCO/Ev5kJ3N5aQ0 \
+ ElFAQCqRSEq44VHk5OTcIVQT4QZBmqkL95F7iEyEMDtDyP4HOkHJdrzv9e0AAAAASUVORK5CYII=');
+
+var nIconRevert = Application.RegisterImageString(
+'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACvUlEQVR42qXRXUgUURwF8LPztdpWWVqs \
+ RKppgphBCVlARPbYYwQBPQX0WlCAlI8JPYeQEZEEAYWmgWoRRZASYGXaipJufu6nO+3u7Dizc2fuvV10 \
+ Iol66sCPO0+HP2cC+Ec6HvSfL5aWXbW4qpYoykHIAWjUTehZYzI2O3Fn+O6teQDuXwt6+oYze+ub93wx \
+ dzqzBWoVGOMMMuByt0ZdV0hiLhQZed422ts1uVFw+2Efn1jTT/e1Xxnv6n0ZrapvCj/R95JsIq59Xkly \
+ MzkfYJIEEgrTkv0N3qUyg5JYxHp842KrcrmzO2R5HMeajj6t6J1aSIarKx8tSFj8Hgna0QiDpSeL8bkx \
+ yMHt5bW1J2w7uWuotoWfAVwA+xUA6wKqaurDa8Wy8IsUc9PRT4ox/YG5iZkRObM8jY/D7wDkveNna6z6 \
+ tm53V7UWpVIOQKkCkWiBwyqWYTAGHCjG1a/v+yPIRN9g7NlbCqSxKWfHlpfUI7t3BpQgVxUtDIBvFLyK \
+ OaiIAUvpVWxTLdQ1tx7GdGEgCqxgU0FwSeuFQzLjvFRykYiMDwCgGwW5bAa5ofuA52HKLgDOOpAnHQD6 \
+ hKLgCIBlVKKyke/TFxKpke5BAFll879dqwDQIJTjdzz/lQScvN51alE3R0xeXEqPDt8zdT0GILVR4J/4 \
+ TdCErSH+BfDyZB759LlCT3sOQFBICdlAY+drrtW1kEl3uwViGnAcA5TkwWgOzPuhamp+D3OyqcTqKvJx \
+ C9mkDctMQ5PjMFhGmdENHAgTVAdN2YNdAsWhnDuMu4TBK1JmWQy2RfYRs5zKHuOhkIkSeNTISXkzpyji \
+ LKx03dQQDKpQ1JCwG5pKIEs2ZNmExLMIIAXQVTAmgXoWqCsqTBWmKQf84X4NyLaggusjguPvYQuOzw34 \
+ w+34Y0Duv8z/pltKt2L43/wE++l7ajCB910AAAAASUVORK5CYII=');
+
+var nIconAdd = Application.RegisterImageString(
+'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACkElEQVR4XpWTUUhTURjHT2kLfFG8srHd \
+ TKsiDDD3KJRBUgRkxibOSthLqPaiUL0IBUzBFN3TgkgQZOKeBgJtsWaJEmNkL6p0VXRmF6ZKaWM57na3 \
+ /n33kKNcUB34v5x7fv/v+/7nXPa/a2Rk5GgOMDn5BvuamAjC53sBr9eL0dFRDA09h8fjcbjd7vME5JMO \
+ /dEgk8kgnU5DUZJIKAriCQW78QSmp6fR1tIKp9PpJcBA0uUYBIOvoKoq5hcWMDc/D0mSIC0uIvZNQTAY \
+ hBSRYWu0oW/QCQKO5ZhoLSdTKaRSaaiZ79is03N9uiIgEAjA5XLB4XDAarGCgIskIQsDODI+Po6Umsbs \
+ 3Bw+rq9zeOvZYzw9w7BAXY15PHj3IYImmw16vf4mYaasQSwWK/T7fUiqaRLlQB3IVHnnkR2D5QwK7W3t \
+ xrEkb6O9rR1ms9kmimJp1iAajZ7Qgoo2V2LzhoHDKxcKoFwrQ7fI8JJMxvQMrmJGY3TDarXeNZlM5YQe \
+ 5gayLJ8NhUKQ60XeNlXmsGpm2K1kWDvHMEOj3NEx9Pf1w26336uoqDhNaB43WF1dLdeCWrkswEUHqW2t \
+ Moc7ChlaChiaCa7PY+js6ITFYmk1GAyaQT43oJAKh4eHsfn5K3bo3pVUhtrmlTm8l8wgsvEFodll1NRc \
+ QlVV1W2j0Xgqa+D3+3UDAwOQ1jZ42uFwmGbmbfPKU1NT6Onpgff1DErF49otWAgr3c+Aq7e3F+HZJbyX \
+ 1rAsb2mB8ZkbqO3I9h4CM0tw+95CKC4BAXUk8bcn3dXVhUZrA241NWlXxdPue9KPB/cforb2KsrKTqJE \
+ 0KOoSAAB1/k7OLAEUjX/+HdV8/MHlu7npvEfJPz6L/wA2VSieE3LsQQAAAAASUVORK5CYII=');
+
+//${ endregion }
+
+function BaseCommand(options) {
+	var defaultOptions = { 
+		name: "", 
+		title: "",
+		prompt: "",
+		icon: -1,
+		action: null
+	}
+
+	for(var option in defaultOptions) this[option] = options && options[option]!==undefined ? options[option] : defaultOptions[option];
+	return new Command(this.name, this.title, this.prompt, this.icon, this.action);
+}
+
+function PerforceCommand(options) {
+	
+	// initialize perforce command defaults
+	var name = options && options['name'] !== undefined ? options['name'] : 'Command';
+	if ( name.indexOf("Perforce.") == -1) name = "Perforce." + name;
+	if ( options ) options['name'] = name;
+	else options = { name: name };
+	
+	if ( options['title'] === undefined) options['title'] = name.substr(9);
+
+	var defaultOptions = { 
+		//is_readonly: false 
+	}
+	for(var option in defaultOptions) options[option] = options[option]!==undefined ? options[option] : defaultOptions[option];
+
+	var vCommand = new BaseCommand(options);
+
+	vCommand.onExecute = function () {
+		if ( options['command'] !== undefined )
+		{
+			Output("Perforce").Image = nIconP4;
+			//Output("Perforce").Capture("p4 login", true);
+			if ( global_options.p4port != "" ) Output("Perforce").Capture("p4 set P4PORT=" + global_options.p4port, true);
+			Output("Perforce").Capture("p4 " + options['command'] + ' "' + ActiveDocument.Path + '"', true);
+			return;
+		}
+		alert("Handler for " + options['name'] + " is undefined!"); 
+	}
+
+	vCommand.onEnabled = function () {
+		if ( options['is_readonly'] !== undefined )
+			return ActiveDocument != null && ActiveDocument.Path != "" && ActiveDocument.ReadOnly == options['is_readonly'];
+		return ActiveDocument != null && ActiveDocument.Path != ""; 
+	}
+
+	return vCommand;
+} 
+
+var vAdd = new PerforceCommand({name : "Add", prompt : "Add current file to Perforce repository", icon : nIconAdd, command : "add", is_readonly : false});
+var vCheckIn = new PerforceCommand({name : "Submit", prompt : "Check-in current file into Perforce repository", icon : nIconCheckIn, command : "submit", is_readonly : false});
+var vCheckOut = new PerforceCommand({name : "CheckOut", title : "Check-out", prompt : "Check-out current file from Perforce repository", icon : nIconCheckOut, command : "edit", is_readonly : true});
+var vRevert = new PerforceCommand({name : "Revert", prompt : "Revert current file by version from Perforce repository", icon : nIconRevert, command : "revert", is_readonly : false});
+var vSync = new PerforceCommand({name : "Sync", title : "Get Latest Revision", prompt : "Get latest revision of the file from Perforce repository", icon : nIconSync, command : "sync"});
+var vHistory = new PerforceCommand({name : "History", prompt : "History of current file in Perforce repository", icon : nIconHistory, command : "filelog"});
+var vStat = new PerforceCommand({name : "FileStatistics", title : "File Statistics", prompt : "Displays Perforce information for current file", command : "fstat"});
+
+Application.AddScriptInfo("C256671F-7738-4820-B87D-40BF540DD829", "Perforce Integration", "1.0.0.4", "Perforce Integration Plugin", "HippoEDIT", "supportbox@hippoedit.com", "http://wiki.hippoedit.com/plugins/perforce");
+
+var global_options = {};
+
+Application.onWorkspaceOpen = function (bSaveState) {
+	global_options = {
+		p4port 	 : readStorage("p4port", "")
+	};
+}
+
+function onOptionsInit()
+{
+	// read "setting" from persistent storage
+	this.Parameters.p4port = global_options.p4port;
+
+	this.Layout =
+	'@<dialog> \
+		<group> \
+			<paragraph text="Connection:" minwidth="15" align="left"/> \
+			<history_edit id="p4port" cuebanner="smth like perforce:1669"/> \
+		</group> \
+	</dialog>@';
+}
+
+function onOptionsApply()
+{
+	// store new "setting" value in persistent storage
+	var vStorage = GetStorage(eStorageTypeWorkspace, "", eAccessTypeWrite);
+	vStorage.p4port = global_options.p4port = this.Parameters.p4port;
+}
+
+function onOptionsContextHelp(varID)
+{
+	switch (varID)
+	{
+		case "p4port" : return "Connection string ($P4PORT) for Perforce server, something like perforce:1669.";
+	}
+	return "No help for '" + varID + "' available.";
+}
+
+Application.RegisterOptionsPage("Perforce", onOptionsInit, onOptionsApply, onOptionsContextHelp);
+
+////////////////////////////////////////////////////////////////////////
+// Initialize Scripting Tools Toolbar
+Application.onInitToolbars = function (){
+	var MyToolbar = this.GetToolBar("perforce", true);
+	MyToolbar.Name = "Perforce";
+	MyToolbar.AddButton(vCheckOut);
+	MyToolbar.AddButton(vCheckIn);
+	MyToolbar.AddButton(vHistory);
+}
+
+////////////////////////////////////////////////////////////////////////
+// Create new main Menu for HTML
+Application.onInitMainMenu = function (bUpdate){ 
+	if ( bUpdate == false )
+	{
+		var menu = this.InsertSubMenu(this.ItemCount - 4, "Perfor&ce");
+		if ( menu != null )
+		{
+			menu.AddItem("", vCheckOut);
+			menu.AddItem("", vCheckIn);
+			menu.AddItem("");
+			menu.AddItem("", vAdd);
+			menu.AddItem("", vRevert);
+			menu.AddItem("", vSync);
+			menu.AddItem("");
+			menu.AddItem("", vHistory);
+			menu.AddItem("", vStat);
+		}
+	}
+} 
